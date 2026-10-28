@@ -397,14 +397,14 @@
   }
 
   function fieldOk(f, raw) {
-    if (f.k === "ch") return raw === f.a;
+    if (f.k === "ch") return f.any ? raw != null : raw === f.a;
     let v = parseNum(String(raw).replace(/[<>≤]/g, "").replace(/−/g, "-"));
     if (!Number.isFinite(v)) return null;
     if (f.abs) v = Math.abs(v);
     if (f.lt && v >= 0 && v <= 0.001 + 1e-9) return true;
     return Math.abs(v - (f.abs ? Math.abs(f.a) : f.a)) <= f.tol + 1e-9;
   }
-  const fieldAns = (f) => f.k === "ch" ? f.o[f.a] : f.lt ? "< 0,001 (o SPSS mostra ,000)" :
+  const fieldAns = (f, raw) => f.k === "ch" ? (f.any ? f.o[raw] : f.o[f.a]) : f.lt ? "< 0,001 (o SPSS mostra ,000)" :
     (f.tol < 0.002 ? f.a.toLocaleString("pt-BR", { minimumFractionDigits: 3, maximumFractionDigits: 3 }) : fmt(f.a, 3)) + (f.unit ? " " + f.unit : "");
   function fieldTrap(f, raw) {
     if (f.k === "ch") return f.traps[String(raw)] || null;
@@ -415,6 +415,8 @@
 
   function caseQuestion(s, st, q, qi, onDone) {
     const key = (f) => qi + "." + f.id;
+    // Campos cujo gabarito depende de outra resposta (ex.: p do post-hoc conforme o método escolhido).
+    const resolve = (f) => f.dep && f.alt && f.alt[String(st.v[qi + "." + f.dep])] ? Object.assign({}, f, f.alt[String(st.v[qi + "." + f.dep])]) : f;
     const card = h("section", { class: "quiz-card case-q", id: "q" + (qi + 1) });
     const inputs = {};
     const fb = h("div", { class: "case-fb" });
@@ -430,7 +432,7 @@
           box.querySelectorAll("button").forEach((b, bi) => b.setAttribute("aria-checked", bi === oi ? "true" : "false"));
         } })));
         inputs[f.id] = box;
-        grid.appendChild(h("div", { class: "fld" }, [h("span", { class: "fld-l", id, html: md(f.label) }), box]));
+        grid.appendChild(h("div", { class: f.any ? "fld wide" : "fld" }, [h("span", { class: "fld-l", id, html: md(f.label) }), box]));
       } else {
         const inp = h("input", { type: "text", inputmode: "decimal", class: "answer", autocomplete: "off", id, value: st.v[key(f)] || "",
           oninput: (e) => { st.v[key(f)] = e.target.value; persist(); e.target.removeAttribute("aria-invalid"); } });
@@ -457,13 +459,13 @@
     function showResult() {
       let right = 0;
       const wrongs = [];
-      q.fields.forEach((f) => {
-        const raw = st.v[key(f)];
+      q.fields.forEach((f0) => {
+        const f = resolve(f0), raw = st.v[key(f)];
         const ok = raw != null && raw !== "" && fieldOk(f, raw) === true;
         if (ok) right++; else wrongs.push([f, raw]);
         const el = inputs[f.id];
         if (f.k === "ch") {
-          el.querySelectorAll("button").forEach((b, bi) => { b.disabled = true; if (bi === f.a) b.classList.add("right"); else if (bi === raw) b.classList.add("wrong"); });
+          el.querySelectorAll("button").forEach((b, bi) => { b.disabled = true; if (bi === (f.any ? raw : f.a)) b.classList.add("right"); else if (bi === raw) b.classList.add("wrong"); });
         } else { el.disabled = true; el.classList.add(ok ? "right" : "wrong"); }
       });
       btn.hidden = true;
@@ -475,7 +477,7 @@
           const yours = raw == null || raw === "" ? "em branco" : f.k === "ch" ? f.o[raw] : raw;
           const trap = raw == null || raw === "" ? null : fieldTrap(f, raw);
           return h("li", null, [
-            h("p", { html: "<strong>" + md(f.label) + "</strong>: você respondeu <em>" + esc(yours) + "</em>; o certo é <strong>" + md(fieldAns(f)) + "</strong>." }),
+            h("p", { html: "<strong>" + md(f.label) + "</strong>: você respondeu <em>" + esc(yours) + "</em>; o certo é <strong>" + md(fieldAns(f, raw)) + "</strong>." }),
             trap ? M("p", "**Por que você errou:** " + trap, { class: "why" }) : null
           ]);
         })) : null
@@ -488,7 +490,7 @@
       const bad = q.fields.filter((f) => f.k === "num" && st.v[key(f)] && fieldOk(f, st.v[key(f)]) === null);
       if (bad.length) { bad.forEach((f) => inputs[f.id].setAttribute("aria-invalid", "true")); inputs[bad[0].id].focus(); return; }
       if (empty.length && !confirm("Há " + empty.length + " campo(s) em branco, que contarão como erro. Conferir mesmo assim?")) return;
-      const right = q.fields.filter((f) => { const r = st.v[key(f)]; return r != null && r !== "" && fieldOk(f, r) === true; }).length;
+      const right = q.fields.filter((f) => { const r = st.v[key(f)]; return r != null && r !== "" && fieldOk(resolve(f), r) === true; }).length;
       st.chk[qi] = right / q.fields.length;
       persist();
       showResult();

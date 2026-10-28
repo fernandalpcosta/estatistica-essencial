@@ -11,6 +11,7 @@ O gabarito é calculado com spss_stats.py, que reproduz os resultados do SPSS 27
 (conferido com o exame da L-carnitina: W = 0,888, p = 0,017; r = -0,853; Levene = 1,342, p = 0,292).
 As sementes estão fixas: rodar de novo produz exatamente os mesmos arquivos.
 """
+import itertools
 import json
 import os
 
@@ -307,10 +308,12 @@ def analyze(c, df):
     from scipy import stats as st
     msw, df2 = R["anova"]["msw"], R["anova"]["df2"]
     R["lsd"] = {}
-    for (i, j) in PAIRS:
+    for (i, j) in itertools.combinations((1, 2, 3, 4), 2):
         a, b = gB[i - 1], gB[j - 1]
         t = (a.mean() - b.mean()) / np.sqrt(msw * (1 / len(a) + 1 / len(b)))
         R["lsd"][(i, j)] = float(2 * st.t.sf(abs(t), df2))
+    # Bonferroni do SPSS (ONEWAY /POSTHOC=BONFERRONI): p do LSD multiplicado pelas 6 comparações possíveis
+    R["bonf"] = {pr: min(1.0, 6 * p) for pr, p in R["lsd"].items()}
     # decisões
     t1 = R["t1"]
     if c["q3dir"] == "diferente":
@@ -749,36 +752,60 @@ def build_questions(c, R):
     # ---- Q13
     post = R["post"]
     f13 = []
+    vf_msg = lambda pv: f"p = {fp(pv)} " + ("< 0,05 → **V** (diferença significativa)." if pv < ALPHA else "> 0,05 → **F** (sem diferença significativa).")
+    lsd_msg = "Este é o p **sem correção** (LSD, ou um t entre os dois grupos). O post-hoc existe justamente para corrigir o p pelas múltiplas comparações."
+    if aok:
+        # Depois da ANOVA a disciplina recomenda o Bonferroni; o Tukey também é aceito.
+        # O aluno indica qual usou e os p são conferidos com esse método.
+        f13.append({**choice("met", "Post-hoc usado", ["Bonferroni", "Tukey"], 0), "any": True})
     for (i, j) in PAIRS:
         pv = post[(i, j)]
-        sig = pv < ALPHA
         if aok:
-            traps = [(R["lsd"][(i, j)], "Este é o p **sem correção** (LSD ou um t entre os dois grupos). O Tukey ajusta o p para as múltiplas comparações; use a coluna *Sig.* da tabela *Multiple Comparisons* com o **Tukey HSD**.")]
+            pb = R["bonf"][(i, j)]
+            traps_t = [(R["lsd"][(i, j)], lsd_msg + " Use a coluna *Sig.* da tabela *Multiple Comparisons*, na linha do **Tukey HSD**."),
+                       (pb, "Este é o p do **Bonferroni**, mas você indicou que usou o Tukey. Confira em que bloco da tabela *Multiple Comparisons* está lendo (o SPSS mostra um bloco por método).")]
+            traps_b = [(R["lsd"][(i, j)], lsd_msg + " Use a coluna *Sig.* no bloco **Bonferroni** da tabela *Multiple Comparisons*."),
+                       (R["lsd"][(i, j)] * 4, "Você multiplicou o p por 4 (as comparações pedidas). O SPSS multiplica pelas **6** comparações possíveis entre 4 grupos; use o valor que ele mostra."),
+                       (pv, "Este é o p do **Tukey**, mas você indicou que usou o Bonferroni. Confira em que bloco da tabela *Multiple Comparisons* está lendo.")]
+            fv = vf(f"s{i}{j}", f"Grupo {i} × grupo {j}: há diferença?", pb < ALPHA, vf_msg(pb))
+            fv.update(dep="met", alt={"1": {"a": 0 if pv < ALPHA else 1, "traps": {str(1 if pv < ALPHA else 0): vf_msg(pv)}}})
+            fpv = pnum(f"p{i}{j}", f"Grupo {i} × grupo {j}: valor de p", pb, traps_b)
+            alt = pnum("x", "", pv, traps_t)
+            fpv.update(dep="met", alt={"1": {k: alt[k] for k in ("a", "traps", "lt") if k in alt}})
+            if "lt" in fpv and "lt" not in alt:
+                fpv["alt"]["1"]["lt"] = False
+            f13 += [fv, fpv]
         else:
             traps = [(R["dunn"][(i, j)]["p"], "Você usou a coluna **Sig.** (sem correção). Use **Adj. Sig.**, corrigida por Bonferroni para as 6 comparações."), (R["tukey"][(i, j)]["p"], "Este é o p do **Tukey**, que pressupõe a ANOVA. Como os pressupostos falharam, o post-hoc adequado são as comparações par a par do Kruskal-Wallis (Dunn-Bonferroni).")]
-        f13.append(vf(f"s{i}{j}", f"Grupo {i} × grupo {j}: há diferença?", sig, f"p = {fp(pv)} " + ("< 0,05 → **V** (diferença significativa)." if sig else "> 0,05 → **F** (sem diferença significativa).")))
-        f13.append(pnum(f"p{i}{j}", f"Grupo {i} × grupo {j}: valor de p", pv, traps))
-    out13 = (table("Multiple Comparisons (Tukey HSD, " + B_n + ")", ["(I)", "(J)", "Mean Difference (I-J)", "Sig."],
-                   [[i, j, f"{R['tukey'][(i, j)]['diff']:.4f}", spss_p(R["tukey"][(i, j)]["p"])] for (i, j) in sorted(R["tukey"])]) if aok else
+            f13.append(vf(f"s{i}{j}", f"Grupo {i} × grupo {j}: há diferença?", pv < ALPHA, vf_msg(pv)))
+            f13.append(pnum(f"p{i}{j}", f"Grupo {i} × grupo {j}: valor de p", pv, traps))
+    out13 = (table("Multiple Comparisons (" + B_n + ")", ["", "(I)", "(J)", "Mean Difference (I-J)", "Sig."],
+                   [["Tukey HSD" if k == 0 else "", i, j, f"{R['tukey'][(i, j)]['diff']:.4f}", spss_p(R["tukey"][(i, j)]["p"])] for k, (i, j) in enumerate(sorted(R["tukey"]))] +
+                   [["Bonferroni" if k == 0 else "", i, j, f"{R['tukey'][(i, j)]['diff']:.4f}", spss_p(R["bonf"][(i, j)])] for k, (i, j) in enumerate(sorted(R["bonf"]))],
+                   "O SPSS mostra os blocos na ordem do diálogo (Tukey antes de Bonferroni). Leia o bloco do método que você escolheu.") if aok else
              table("Pairwise Comparisons (" + B_n + ")", ["Sample 1-Sample 2", "Test Statistic", "Std. Error", "Std. Test Statistic", "Sig.", "Adj. Sig."],
                    [[f"{i}-{j}", f"{R['dunn'][(i, j)]['stat']:.3f}", f"{R['dunn'][(i, j)]['se']:.3f}", f"{R['dunn'][(i, j)]['z']:.3f}", spss_p(R["dunn"][(i, j)]["p"]), spss_p(R["dunn"][(i, j)]["adj"])] for (i, j) in sorted(R["dunn"])],
                    "Significance values have been adjusted by the Bonferroni correction for multiple tests."))
     Q.append({
-        "q": ("Em relação à questão anterior, aplique o teste *a posteriori* de **Tukey**" if aok else "Em relação à questão anterior, faça as **comparações múltiplas** (par a par) adequadas ao teste escolhido") +
+        "q": ("Em relação à questão anterior, aplique o teste *a posteriori* de **Bonferroni** (ou de Tukey; indique qual usou)" if aok else "Em relação à questão anterior, faça as **comparações múltiplas** (par a par) adequadas ao teste escolhido") +
              " e diga se, entre os grupos indicados, existem diferenças significativas (V ou F) e qual o valor de p.",
         "fields": f13, "grid": 2,
         "theory": [
             "Os testes **post-hoc** (*a posteriori*) comparam os grupos dois a dois, **corrigindo o p** para o número de comparações, de modo que o erro tipo I global fique em 5%.",
-            "Depois da ANOVA, o **Tukey HSD** é o padrão quando as variâncias são homogêneas. Depois do Kruskal-Wallis, o SPSS faz o **teste de Dunn com correção de Bonferroni** (menu *Nonparametric Tests › Independent Samples*, opção *All pairwise*); use a coluna **Adj. Sig.**",
+            "Depois da ANOVA, a disciplina recomenda o **Bonferroni**: ele pega o p de cada comparação sem correção (LSD) e multiplica pelo número de comparações, ou seja, cada par precisa de p < 0,05/6 ≈ 0,0083. É simples, vale para qualquer tipo de teste e é **conservador** (protege bem contra falsos positivos). Atenção: o SPSS multiplica sempre pelas **6** comparações possíveis entre 4 grupos, mesmo que você só vá olhar 4; vale o valor que o SPSS mostra na coluna *Sig.* do bloco Bonferroni.",
+            "O **Tukey HSD** também é aceito aqui: foi feito para comparar **todos os pares** depois de uma ANOVA com variâncias homogêneas e costuma dar p um pouco menores que o Bonferroni (tem mais poder). Os dois controlam o erro tipo I global em 5%; quando discordam, é porque o p está perto do limite." if aok else "Depois da ANOVA, o padrão é o **Tukey HSD** (ou o Bonferroni, para poucas comparações específicas).",
+            "Depois do Kruskal-Wallis, o SPSS faz o **teste de Dunn com correção de Bonferroni** (menu *Nonparametric Tests › Independent Samples*, opção *All pairwise*); use a coluna **Adj. Sig.**",
             ("Atenção: aqui a ANOVA **não** foi significativa (questão 12). Nesse caso, o normal é **não** fazer post-hoc: não há diferença global para explicar. Os valores servem para confirmar que nenhum par difere." if not R["global_sig"] else
              "O post-hoc só faz sentido quando o teste global (questão 12) é significativo. Pode acontecer de o teste global ser significativo e só um ou dois pares diferirem."),
         ],
-        "spss": ({"menu": f"Analyze › Compare Means › One-Way ANOVA… → *Post Hoc…* → marque **Tukey** → Continue → OK",
-                  "syntax": f"ONEWAY {B_n} BY {rec['name']}\n  /POSTHOC=TUKEY ALPHA(0.05)."} if aok else
+        "spss": ({"menu": f"Analyze › Compare Means › One-Way ANOVA… → *Post Hoc…* → marque **Bonferroni** (ou **Tukey**) → Continue → OK",
+                  "syntax": f"ONEWAY {B_n} BY {rec['name']}\n  /POSTHOC=BONFERRONI TUKEY ALPHA(0.05)."} if aok else
                  {"menu": f"Analyze › Nonparametric Tests › Independent Samples… → *Fields*: `{B_n}` em *Test Fields*, `{rec['name']}` em *Groups* (tem de estar como Nominal/Ordinal) → *Settings*: Customize tests → **Kruskal-Wallis 1-way ANOVA**, *Multiple comparisons: All pairwise* → Run. Dê duplo clique na tabela de resultados e escolha *Pairwise Comparisons*.",
                   "syntax": f"NPTESTS\n  /INDEPENDENT TEST ({B_n}) GROUP ({rec['name']})\n    KRUSKAL_WALLIS(COMPARE=PAIRWISE)\n  /CRITERIA ALPHA=0.05 CILEVEL=95."}),
         "out": out13,
-        "sol": " · ".join(f"{i} × {j}: p = {fp(post[(i, j)])} → {'V' if post[(i, j)] < ALPHA else 'F'}" for (i, j) in PAIRS) + ".",
+        "sol": (" · ".join(f"{i} × {j}: p = {fp(post[(i, j)])} → {'V' if post[(i, j)] < ALPHA else 'F'}" for (i, j) in PAIRS) + "." if not aok else
+                "**Bonferroni:** " + " · ".join(f"{i} × {j}: p = {fp(R['bonf'][(i, j)])} → {'V' if R['bonf'][(i, j)] < ALPHA else 'F'}" for (i, j) in PAIRS) + "." +
+                " **Tukey** (também aceito): " + " · ".join(f"{i} × {j}: p = {fp(post[(i, j)])} → {'V' if post[(i, j)] < ALPHA else 'F'}" for (i, j) in PAIRS) + "."),
     })
     return Q
 

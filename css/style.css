@@ -319,6 +319,7 @@ pre.output { padding: 12px 14px; background: var(--sunk); border-radius: 10px; f
 .case-fields.g2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .case-fields.g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .fld { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.fld.wide { grid-column: 1 / -1; }
 .fld-l { font-size: 0.92rem; font-weight: 600; color: var(--muted); }
 .fld .answer { max-width: none; width: 100%; font-size: 1rem; padding: 8px 10px; }
 .seg { display: flex; flex-wrap: wrap; gap: 6px; }

@@ -1015,8 +1015,20 @@ const SIMULADOS = [
     "sol": "ANOVA: $F(3, 18) = 13,231$, **p < 0,001**, $\\eta^2 = 0,69$. Há diferença entre pelo menos dois grupos."
    },
    {
-    "q": "Em relação à questão anterior, aplique o teste *a posteriori* de **Tukey** e diga se, entre os grupos indicados, existem diferenças significativas (V ou F) e qual o valor de p.",
+    "q": "Em relação à questão anterior, aplique o teste *a posteriori* de **Bonferroni** (ou de Tukey; indique qual usou) e diga se, entre os grupos indicados, existem diferenças significativas (V ou F) e qual o valor de p.",
     "fields": [
+     {
+      "k": "ch",
+      "id": "met",
+      "label": "Post-hoc usado",
+      "o": [
+       "Bonferroni",
+       "Tukey"
+      ],
+      "a": 0,
+      "traps": {},
+      "any": true
+     },
      {
       "k": "ch",
       "id": "s13",
@@ -1027,22 +1039,49 @@ const SIMULADOS = [
       ],
       "a": 0,
       "traps": {
-       "1": "p = 0,006 < 0,05 → **V** (diferença significativa)."
+       "1": "p = 0,007 < 0,05 → **V** (diferença significativa)."
+      },
+      "dep": "met",
+      "alt": {
+       "1": {
+        "a": 0,
+        "traps": {
+         "1": "p = 0,006 < 0,05 → **V** (diferença significativa)."
+        }
+       }
       }
      },
      {
       "k": "num",
       "id": "p13",
       "label": "Grupo 1 × grupo 3: valor de p",
-      "a": 0.006209,
+      "a": 0.007454,
       "tol": 0.0015,
       "traps": [
        {
         "v": 0.001242,
         "tol": 0.0015,
-        "m": "Este é o p **sem correção** (LSD ou um t entre os dois grupos). O Tukey ajusta o p para as múltiplas comparações; use a coluna *Sig.* da tabela *Multiple Comparisons* com o **Tukey HSD**."
+        "m": "Este é o p **sem correção** (LSD, ou um t entre os dois grupos). O post-hoc existe justamente para corrigir o p pelas múltiplas comparações. Use a coluna *Sig.* no bloco **Bonferroni** da tabela *Multiple Comparisons*."
+       },
+       {
+        "v": 0.004969,
+        "tol": 0.0015,
+        "m": "Você multiplicou o p por 4 (as comparações pedidas). O SPSS multiplica pelas **6** comparações possíveis entre 4 grupos; use o valor que ele mostra."
        }
-      ]
+      ],
+      "dep": "met",
+      "alt": {
+       "1": {
+        "a": 0.006209,
+        "traps": [
+         {
+          "v": 0.001242,
+          "tol": 0.0015,
+          "m": "Este é o p **sem correção** (LSD, ou um t entre os dois grupos). O post-hoc existe justamente para corrigir o p pelas múltiplas comparações. Use a coluna *Sig.* da tabela *Multiple Comparisons*, na linha do **Tukey HSD**."
+         }
+        ]
+       }
+      }
      },
      {
       "k": "ch",
@@ -1054,22 +1093,59 @@ const SIMULADOS = [
       ],
       "a": 1,
       "traps": {
-       "0": "p = 0,486 > 0,05 → **F** (sem diferença significativa)."
+       "0": "p = 0,984 > 0,05 → **F** (sem diferença significativa)."
+      },
+      "dep": "met",
+      "alt": {
+       "1": {
+        "a": 1,
+        "traps": {
+         "0": "p = 0,486 > 0,05 → **F** (sem diferença significativa)."
+        }
+       }
       }
      },
      {
       "k": "num",
       "id": "p23",
       "label": "Grupo 2 × grupo 3: valor de p",
-      "a": 0.485782,
+      "a": 0.984047,
       "tol": 0.0015,
       "traps": [
        {
         "v": 0.164008,
         "tol": 0.0015,
-        "m": "Este é o p **sem correção** (LSD ou um t entre os dois grupos). O Tukey ajusta o p para as múltiplas comparações; use a coluna *Sig.* da tabela *Multiple Comparisons* com o **Tukey HSD**."
+        "m": "Este é o p **sem correção** (LSD, ou um t entre os dois grupos). O post-hoc existe justamente para corrigir o p pelas múltiplas comparações. Use a coluna *Sig.* no bloco **Bonferroni** da tabela *Multiple Comparisons*."
+       },
+       {
+        "v": 0.656031,
+        "tol": 0.0015,
+        "m": "Você multiplicou o p por 4 (as comparações pedidas). O SPSS multiplica pelas **6** comparações possíveis entre 4 grupos; use o valor que ele mostra."
+       },
+       {
+        "v": 0.485782,
+        "tol": 0.0015,
+        "m": "Este é o p do **Tukey**, mas você indicou que usou o Bonferroni. Confira em que bloco da tabela *Multiple Comparisons* está lendo."
        }
-      ]
+      ],
+      "dep": "met",
+      "alt": {
+       "1": {
+        "a": 0.485782,
+        "traps": [
+         {
+          "v": 0.164008,
+          "tol": 0.0015,
+          "m": "Este é o p **sem correção** (LSD, ou um t entre os dois grupos). O post-hoc existe justamente para corrigir o p pelas múltiplas comparações. Use a coluna *Sig.* da tabela *Multiple Comparisons*, na linha do **Tukey HSD**."
+         },
+         {
+          "v": 0.984047,
+          "tol": 0.0015,
+          "m": "Este é o p do **Bonferroni**, mas você indicou que usou o Tukey. Confira em que bloco da tabela *Multiple Comparisons* está lendo (o SPSS mostra um bloco por método)."
+         }
+        ]
+       }
+      }
      },
      {
       "k": "ch",
@@ -1082,16 +1158,33 @@ const SIMULADOS = [
       "a": 0,
       "traps": {
        "1": "p < 0,001 < 0,05 → **V** (diferença significativa)."
+      },
+      "dep": "met",
+      "alt": {
+       "1": {
+        "a": 0,
+        "traps": {
+         "1": "p < 0,001 < 0,05 → **V** (diferença significativa)."
+        }
+       }
       }
      },
      {
       "k": "num",
       "id": "p14",
       "label": "Grupo 1 × grupo 4: valor de p",
-      "a": 4.7e-05,
+      "a": 5.2e-05,
       "tol": 0.0015,
       "traps": [],
-      "lt": true
+      "lt": true,
+      "dep": "met",
+      "alt": {
+       "1": {
+        "a": 4.7e-05,
+        "traps": [],
+        "lt": true
+       }
+      }
      },
      {
       "k": "ch",
@@ -1104,35 +1197,59 @@ const SIMULADOS = [
       "a": 0,
       "traps": {
        "1": "p = 0,005 < 0,05 → **V** (diferença significativa)."
+      },
+      "dep": "met",
+      "alt": {
+       "1": {
+        "a": 0,
+        "traps": {
+         "1": "p = 0,005 < 0,05 → **V** (diferença significativa)."
+        }
+       }
       }
      },
      {
       "k": "num",
       "id": "p24",
       "label": "Grupo 2 × grupo 4: valor de p",
-      "a": 0.004615,
+      "a": 0.005486,
       "tol": 0.0015,
       "traps": [
        {
         "v": 0.000914,
         "tol": 0.0015,
-        "m": "Este é o p **sem correção** (LSD ou um t entre os dois grupos). O Tukey ajusta o p para as múltiplas comparações; use a coluna *Sig.* da tabela *Multiple Comparisons* com o **Tukey HSD**."
+        "m": "Este é o p **sem correção** (LSD, ou um t entre os dois grupos). O post-hoc existe justamente para corrigir o p pelas múltiplas comparações. Use a coluna *Sig.* no bloco **Bonferroni** da tabela *Multiple Comparisons*."
        }
-      ]
+      ],
+      "dep": "met",
+      "alt": {
+       "1": {
+        "a": 0.004615,
+        "traps": [
+         {
+          "v": 0.000914,
+          "tol": 0.0015,
+          "m": "Este é o p **sem correção** (LSD, ou um t entre os dois grupos). O post-hoc existe justamente para corrigir o p pelas múltiplas comparações. Use a coluna *Sig.* da tabela *Multiple Comparisons*, na linha do **Tukey HSD**."
+         }
+        ]
+       }
+      }
      }
     ],
     "grid": 2,
     "theory": [
      "Os testes **post-hoc** (*a posteriori*) comparam os grupos dois a dois, **corrigindo o p** para o número de comparações, de modo que o erro tipo I global fique em 5%.",
-     "Depois da ANOVA, o **Tukey HSD** é o padrão quando as variâncias são homogêneas. Depois do Kruskal-Wallis, o SPSS faz o **teste de Dunn com correção de Bonferroni** (menu *Nonparametric Tests › Independent Samples*, opção *All pairwise*); use a coluna **Adj. Sig.**",
+     "Depois da ANOVA, a disciplina recomenda o **Bonferroni**: ele pega o p de cada comparação sem correção (LSD) e multiplica pelo número de comparações, ou seja, cada par precisa de p < 0,05/6 ≈ 0,0083. É simples, vale para qualquer tipo de teste e é **conservador** (protege bem contra falsos positivos). Atenção: o SPSS multiplica sempre pelas **6** comparações possíveis entre 4 grupos, mesmo que você só vá olhar 4; vale o valor que o SPSS mostra na coluna *Sig.* do bloco Bonferroni.",
+     "O **Tukey HSD** também é aceito aqui: foi feito para comparar **todos os pares** depois de uma ANOVA com variâncias homogêneas e costuma dar p um pouco menores que o Bonferroni (tem mais poder). Os dois controlam o erro tipo I global em 5%; quando discordam, é porque o p está perto do limite.",
+     "Depois do Kruskal-Wallis, o SPSS faz o **teste de Dunn com correção de Bonferroni** (menu *Nonparametric Tests › Independent Samples*, opção *All pairwise*); use a coluna **Adj. Sig.**",
      "O post-hoc só faz sentido quando o teste global (questão 12) é significativo. Pode acontecer de o teste global ser significativo e só um ou dois pares diferirem."
     ],
     "spss": {
-     "menu": "Analyze › Compare Means › One-Way ANOVA… → *Post Hoc…* → marque **Tukey** → Continue → OK",
-     "syntax": "ONEWAY tempo_placebo BY grupotreino\n  /POSTHOC=TUKEY ALPHA(0.05)."
+     "menu": "Analyze › Compare Means › One-Way ANOVA… → *Post Hoc…* → marque **Bonferroni** (ou **Tukey**) → Continue → OK",
+     "syntax": "ONEWAY tempo_placebo BY grupotreino\n  /POSTHOC=BONFERRONI TUKEY ALPHA(0.05)."
     },
-    "out": "Multiple Comparisons (Tukey HSD, tempo_placebo)\n-------------------------------------\n(I)  (J)  Mean Difference (I-J)  Sig.\n-------------------------------------\n1      2                 1.5203  .105\n1      3                 2.3820  .006\n1      4                 3.9880  .000\n2      3                 0.8617  .486\n2      4                 2.4677  .005\n3      4                 1.6060  .081\n-------------------------------------",
-    "sol": "1 × 3: p = 0,006 → V · 2 × 3: p = 0,486 → F · 1 × 4: p < 0,001 → V · 2 × 4: p = 0,005 → V."
+    "out": "Multiple Comparisons (tempo_placebo)\n-------------------------------------------------\n            (I)  (J)  Mean Difference (I-J)  Sig.\n-------------------------------------------------\nTukey HSD     1    2                 1.5203  .105\n              1    3                 2.3820  .006\n              1    4                 3.9880  .000\n              2    3                 0.8617  .486\n              2    4                 2.4677  .005\n              3    4                 1.6060  .081\nBonferroni    1    2                 1.5203  .151\n              1    3                 2.3820  .007\n              1    4                 3.9880  .000\n              2    3                 0.8617  .984\n              2    4                 2.4677  .005\n              3    4                 1.6060  .114\n-------------------------------------------------\nO SPSS mostra os blocos na ordem do diálogo (Tukey antes de Bonferroni). Leia o bloco do método que você escolheu.",
+    "sol": "**Bonferroni:** 1 × 3: p = 0,007 → V · 2 × 3: p = 0,984 → F · 1 × 4: p < 0,001 → V · 2 × 4: p = 0,005 → V. **Tukey** (também aceito): 1 × 3: p = 0,006 → V · 2 × 3: p = 0,486 → F · 1 × 4: p < 0,001 → V · 2 × 4: p = 0,005 → V."
    }
   ]
  },
@@ -2292,7 +2409,9 @@ const SIMULADOS = [
     "grid": 2,
     "theory": [
      "Os testes **post-hoc** (*a posteriori*) comparam os grupos dois a dois, **corrigindo o p** para o número de comparações, de modo que o erro tipo I global fique em 5%.",
-     "Depois da ANOVA, o **Tukey HSD** é o padrão quando as variâncias são homogêneas. Depois do Kruskal-Wallis, o SPSS faz o **teste de Dunn com correção de Bonferroni** (menu *Nonparametric Tests › Independent Samples*, opção *All pairwise*); use a coluna **Adj. Sig.**",
+     "Depois da ANOVA, a disciplina recomenda o **Bonferroni**: ele pega o p de cada comparação sem correção (LSD) e multiplica pelo número de comparações, ou seja, cada par precisa de p < 0,05/6 ≈ 0,0083. É simples, vale para qualquer tipo de teste e é **conservador** (protege bem contra falsos positivos). Atenção: o SPSS multiplica sempre pelas **6** comparações possíveis entre 4 grupos, mesmo que você só vá olhar 4; vale o valor que o SPSS mostra na coluna *Sig.* do bloco Bonferroni.",
+     "Depois da ANOVA, o padrão é o **Tukey HSD** (ou o Bonferroni, para poucas comparações específicas).",
+     "Depois do Kruskal-Wallis, o SPSS faz o **teste de Dunn com correção de Bonferroni** (menu *Nonparametric Tests › Independent Samples*, opção *All pairwise*); use a coluna **Adj. Sig.**",
      "O post-hoc só faz sentido quando o teste global (questão 12) é significativo. Pode acontecer de o teste global ser significativo e só um ou dois pares diferirem."
     ],
     "spss": {
@@ -3334,8 +3453,20 @@ const SIMULADOS = [
     "sol": "ANOVA: $F(3, 18) = 10,005$, **p < 0,001**, $\\eta^2 = 0,63$. Há diferença entre pelo menos dois grupos."
    },
    {
-    "q": "Em relação à questão anterior, aplique o teste *a posteriori* de **Tukey** e diga se, entre os grupos indicados, existem diferenças significativas (V ou F) e qual o valor de p.",
+    "q": "Em relação à questão anterior, aplique o teste *a posteriori* de **Bonferroni** (ou de Tukey; indique qual usou) e diga se, entre os grupos indicados, existem diferenças significativas (V ou F) e qual o valor de p.",
     "fields": [
+     {
+      "k": "ch",
+      "id": "met",
+      "label": "Post-hoc usado",
+      "o": [
+       "Bonferroni",
+       "Tukey"
+      ],
+      "a": 0,
+      "traps": {},
+      "any": true
+     },
      {
       "k": "ch",
       "id": "s13",
@@ -3346,22 +3477,59 @@ const SIMULADOS = [
       ],
       "a": 0,
       "traps": {
-       "1": "p = 0,021 < 0,05 → **V** (diferença significativa)."
+       "1": "p = 0,027 < 0,05 → **V** (diferença significativa)."
+      },
+      "dep": "met",
+      "alt": {
+       "1": {
+        "a": 0,
+        "traps": {
+         "1": "p = 0,021 < 0,05 → **V** (diferença significativa)."
+        }
+       }
       }
      },
      {
       "k": "num",
       "id": "p13",
       "label": "Grupo 1 × grupo 3: valor de p",
-      "a": 0.021132,
+      "a": 0.026776,
       "tol": 0.0015,
       "traps": [
        {
         "v": 0.004463,
         "tol": 0.0015,
-        "m": "Este é o p **sem correção** (LSD ou um t entre os dois grupos). O Tukey ajusta o p para as múltiplas comparações; use a coluna *Sig.* da tabela *Multiple Comparisons* com o **Tukey HSD**."
+        "m": "Este é o p **sem correção** (LSD, ou um t entre os dois grupos). O post-hoc existe justamente para corrigir o p pelas múltiplas comparações. Use a coluna *Sig.* no bloco **Bonferroni** da tabela *Multiple Comparisons*."
+       },
+       {
+        "v": 0.017851,
+        "tol": 0.0015,
+        "m": "Você multiplicou o p por 4 (as comparações pedidas). O SPSS multiplica pelas **6** comparações possíveis entre 4 grupos; use o valor que ele mostra."
+       },
+       {
+        "v": 0.021132,
+        "tol": 0.0015,
+        "m": "Este é o p do **Tukey**, mas você indicou que usou o Bonferroni. Confira em que bloco da tabela *Multiple Comparisons* está lendo."
        }
-      ]
+      ],
+      "dep": "met",
+      "alt": {
+       "1": {
+        "a": 0.021132,
+        "traps": [
+         {
+          "v": 0.004463,
+          "tol": 0.0015,
+          "m": "Este é o p **sem correção** (LSD, ou um t entre os dois grupos). O post-hoc existe justamente para corrigir o p pelas múltiplas comparações. Use a coluna *Sig.* da tabela *Multiple Comparisons*, na linha do **Tukey HSD**."
+         },
+         {
+          "v": 0.026776,
+          "tol": 0.0015,
+          "m": "Este é o p do **Bonferroni**, mas você indicou que usou o Tukey. Confira em que bloco da tabela *Multiple Comparisons* está lendo (o SPSS mostra um bloco por método)."
+         }
+        ]
+       }
+      }
      },
      {
       "k": "ch",
@@ -3373,22 +3541,59 @@ const SIMULADOS = [
       ],
       "a": 1,
       "traps": {
-       "0": "p = 0,263 > 0,05 → **F** (sem diferença significativa)."
+       "0": "p = 0,442 > 0,05 → **F** (sem diferença significativa)."
+      },
+      "dep": "met",
+      "alt": {
+       "1": {
+        "a": 1,
+        "traps": {
+         "0": "p = 0,263 > 0,05 → **F** (sem diferença significativa)."
+        }
+       }
       }
      },
      {
       "k": "num",
       "id": "p23",
       "label": "Grupo 2 × grupo 3: valor de p",
-      "a": 0.263215,
+      "a": 0.442247,
       "tol": 0.0015,
       "traps": [
        {
         "v": 0.073708,
         "tol": 0.0015,
-        "m": "Este é o p **sem correção** (LSD ou um t entre os dois grupos). O Tukey ajusta o p para as múltiplas comparações; use a coluna *Sig.* da tabela *Multiple Comparisons* com o **Tukey HSD**."
+        "m": "Este é o p **sem correção** (LSD, ou um t entre os dois grupos). O post-hoc existe justamente para corrigir o p pelas múltiplas comparações. Use a coluna *Sig.* no bloco **Bonferroni** da tabela *Multiple Comparisons*."
+       },
+       {
+        "v": 0.294831,
+        "tol": 0.0015,
+        "m": "Você multiplicou o p por 4 (as comparações pedidas). O SPSS multiplica pelas **6** comparações possíveis entre 4 grupos; use o valor que ele mostra."
+       },
+       {
+        "v": 0.263215,
+        "tol": 0.0015,
+        "m": "Este é o p do **Tukey**, mas você indicou que usou o Bonferroni. Confira em que bloco da tabela *Multiple Comparisons* está lendo."
        }
-      ]
+      ],
+      "dep": "met",
+      "alt": {
+       "1": {
+        "a": 0.263215,
+        "traps": [
+         {
+          "v": 0.073708,
+          "tol": 0.0015,
+          "m": "Este é o p **sem correção** (LSD, ou um t entre os dois grupos). O post-hoc existe justamente para corrigir o p pelas múltiplas comparações. Use a coluna *Sig.* da tabela *Multiple Comparisons*, na linha do **Tukey HSD**."
+         },
+         {
+          "v": 0.442247,
+          "tol": 0.0015,
+          "m": "Este é o p do **Bonferroni**, mas você indicou que usou o Tukey. Confira em que bloco da tabela *Multiple Comparisons* está lendo (o SPSS mostra um bloco por método)."
+         }
+        ]
+       }
+      }
      },
      {
       "k": "ch",
@@ -3401,16 +3606,33 @@ const SIMULADOS = [
       "a": 0,
       "traps": {
        "1": "p < 0,001 < 0,05 → **V** (diferença significativa)."
+      },
+      "dep": "met",
+      "alt": {
+       "1": {
+        "a": 0,
+        "traps": {
+         "1": "p < 0,001 < 0,05 → **V** (diferença significativa)."
+        }
+       }
       }
      },
      {
       "k": "num",
       "id": "p14",
       "label": "Grupo 1 × grupo 4: valor de p",
-      "a": 0.000384,
+      "a": 0.000432,
       "tol": 0.0015,
       "traps": [],
-      "lt": true
+      "lt": true,
+      "dep": "met",
+      "alt": {
+       "1": {
+        "a": 0.000384,
+        "traps": [],
+        "lt": true
+       }
+      }
      },
      {
       "k": "ch",
@@ -3422,36 +3644,60 @@ const SIMULADOS = [
       ],
       "a": 0,
       "traps": {
-       "1": "p = 0,005 < 0,05 → **V** (diferença significativa)."
+       "1": "p = 0,006 < 0,05 → **V** (diferença significativa)."
+      },
+      "dep": "met",
+      "alt": {
+       "1": {
+        "a": 0,
+        "traps": {
+         "1": "p = 0,005 < 0,05 → **V** (diferença significativa)."
+        }
+       }
       }
      },
      {
       "k": "num",
       "id": "p24",
       "label": "Grupo 2 × grupo 4: valor de p",
-      "a": 0.005187,
+      "a": 0.006189,
       "tol": 0.0015,
       "traps": [
        {
         "v": 0.001031,
         "tol": 0.0015,
-        "m": "Este é o p **sem correção** (LSD ou um t entre os dois grupos). O Tukey ajusta o p para as múltiplas comparações; use a coluna *Sig.* da tabela *Multiple Comparisons* com o **Tukey HSD**."
+        "m": "Este é o p **sem correção** (LSD, ou um t entre os dois grupos). O post-hoc existe justamente para corrigir o p pelas múltiplas comparações. Use a coluna *Sig.* no bloco **Bonferroni** da tabela *Multiple Comparisons*."
        }
-      ]
+      ],
+      "dep": "met",
+      "alt": {
+       "1": {
+        "a": 0.005187,
+        "traps": [
+         {
+          "v": 0.001031,
+          "tol": 0.0015,
+          "m": "Este é o p **sem correção** (LSD, ou um t entre os dois grupos). O post-hoc existe justamente para corrigir o p pelas múltiplas comparações. Use a coluna *Sig.* da tabela *Multiple Comparisons*, na linha do **Tukey HSD**."
+         }
+        ]
+       }
+      }
      }
     ],
     "grid": 2,
     "theory": [
      "Os testes **post-hoc** (*a posteriori*) comparam os grupos dois a dois, **corrigindo o p** para o número de comparações, de modo que o erro tipo I global fique em 5%.",
-     "Depois da ANOVA, o **Tukey HSD** é o padrão quando as variâncias são homogêneas. Depois do Kruskal-Wallis, o SPSS faz o **teste de Dunn com correção de Bonferroni** (menu *Nonparametric Tests › Independent Samples*, opção *All pairwise*); use a coluna **Adj. Sig.**",
+     "Depois da ANOVA, a disciplina recomenda o **Bonferroni**: ele pega o p de cada comparação sem correção (LSD) e multiplica pelo número de comparações, ou seja, cada par precisa de p < 0,05/6 ≈ 0,0083. É simples, vale para qualquer tipo de teste e é **conservador** (protege bem contra falsos positivos). Atenção: o SPSS multiplica sempre pelas **6** comparações possíveis entre 4 grupos, mesmo que você só vá olhar 4; vale o valor que o SPSS mostra na coluna *Sig.* do bloco Bonferroni.",
+     "O **Tukey HSD** também é aceito aqui: foi feito para comparar **todos os pares** depois de uma ANOVA com variâncias homogêneas e costuma dar p um pouco menores que o Bonferroni (tem mais poder). Os dois controlam o erro tipo I global em 5%; quando discordam, é porque o p está perto do limite.",
+     "Depois do Kruskal-Wallis, o SPSS faz o **teste de Dunn com correção de Bonferroni** (menu *Nonparametric Tests › Independent Samples*, opção *All pairwise*); use a coluna **Adj. Sig.**",
      "O post-hoc só faz sentido quando o teste global (questão 12) é significativo. Pode acontecer de o teste global ser significativo e só um ou dois pares diferirem."
     ],
     "spss": {
-     "menu": "Analyze › Compare Means › One-Way ANOVA… → *Post Hoc…* → marque **Tukey** → Continue → OK",
-     "syntax": "ONEWAY gasto_normal BY grupoanos\n  /POSTHOC=TUKEY ALPHA(0.05)."
+     "menu": "Analyze › Compare Means › One-Way ANOVA… → *Post Hoc…* → marque **Bonferroni** (ou **Tukey**) → Continue → OK",
+     "syntax": "ONEWAY gasto_normal BY grupoanos\n  /POSTHOC=BONFERRONI TUKEY ALPHA(0.05)."
     },
-    "out": "Multiple Comparisons (Tukey HSD, gasto_normal)\n-------------------------------------\n(I)  (J)  Mean Difference (I-J)  Sig.\n-------------------------------------\n1      2                -1.5760  .493\n1      3                -3.5610  .021\n1      4                -5.8600  .000\n2      3                -1.9850  .263\n2      4                -4.2840  .005\n3      4                -2.2990  .192\n-------------------------------------",
-    "sol": "1 × 3: p = 0,021 → V · 2 × 3: p = 0,263 → F · 1 × 4: p < 0,001 → V · 2 × 4: p = 0,005 → V."
+    "out": "Multiple Comparisons (gasto_normal)\n--------------------------------------------------\n            (I)  (J)  Mean Difference (I-J)   Sig.\n--------------------------------------------------\nTukey HSD     1    2                -1.5760   .493\n              1    3                -3.5610   .021\n              1    4                -5.8600   .000\n              2    3                -1.9850   .263\n              2    4                -4.2840   .005\n              3    4                -2.2990   .192\nBonferroni    1    2                -1.5760  1.000\n              1    3                -3.5610   .027\n              1    4                -5.8600   .000\n              2    3                -1.9850   .442\n              2    4                -4.2840   .006\n              3    4                -2.2990   .302\n--------------------------------------------------\nO SPSS mostra os blocos na ordem do diálogo (Tukey antes de Bonferroni). Leia o bloco do método que você escolheu.",
+    "sol": "**Bonferroni:** 1 × 3: p = 0,027 → V · 2 × 3: p = 0,442 → F · 1 × 4: p < 0,001 → V · 2 × 4: p = 0,006 → V. **Tukey** (também aceito): 1 × 3: p = 0,021 → V · 2 × 3: p = 0,263 → F · 1 × 4: p < 0,001 → V · 2 × 4: p = 0,005 → V."
    }
   ]
  },
@@ -4609,7 +4855,9 @@ const SIMULADOS = [
     "grid": 2,
     "theory": [
      "Os testes **post-hoc** (*a posteriori*) comparam os grupos dois a dois, **corrigindo o p** para o número de comparações, de modo que o erro tipo I global fique em 5%.",
-     "Depois da ANOVA, o **Tukey HSD** é o padrão quando as variâncias são homogêneas. Depois do Kruskal-Wallis, o SPSS faz o **teste de Dunn com correção de Bonferroni** (menu *Nonparametric Tests › Independent Samples*, opção *All pairwise*); use a coluna **Adj. Sig.**",
+     "Depois da ANOVA, a disciplina recomenda o **Bonferroni**: ele pega o p de cada comparação sem correção (LSD) e multiplica pelo número de comparações, ou seja, cada par precisa de p < 0,05/6 ≈ 0,0083. É simples, vale para qualquer tipo de teste e é **conservador** (protege bem contra falsos positivos). Atenção: o SPSS multiplica sempre pelas **6** comparações possíveis entre 4 grupos, mesmo que você só vá olhar 4; vale o valor que o SPSS mostra na coluna *Sig.* do bloco Bonferroni.",
+     "Depois da ANOVA, o padrão é o **Tukey HSD** (ou o Bonferroni, para poucas comparações específicas).",
+     "Depois do Kruskal-Wallis, o SPSS faz o **teste de Dunn com correção de Bonferroni** (menu *Nonparametric Tests › Independent Samples*, opção *All pairwise*); use a coluna **Adj. Sig.**",
      "O post-hoc só faz sentido quando o teste global (questão 12) é significativo. Pode acontecer de o teste global ser significativo e só um ou dois pares diferirem."
     ],
     "spss": {
@@ -5655,8 +5903,20 @@ const SIMULADOS = [
     "sol": "ANOVA: $F(3, 18) = 0,967$, **p = 0,430**, $\\eta^2 = 0,14$. Não há diferença significativa entre os grupos."
    },
    {
-    "q": "Em relação à questão anterior, aplique o teste *a posteriori* de **Tukey** e diga se, entre os grupos indicados, existem diferenças significativas (V ou F) e qual o valor de p.",
+    "q": "Em relação à questão anterior, aplique o teste *a posteriori* de **Bonferroni** (ou de Tukey; indique qual usou) e diga se, entre os grupos indicados, existem diferenças significativas (V ou F) e qual o valor de p.",
     "fields": [
+     {
+      "k": "ch",
+      "id": "met",
+      "label": "Post-hoc usado",
+      "o": [
+       "Bonferroni",
+       "Tukey"
+      ],
+      "a": 0,
+      "traps": {},
+      "any": true
+     },
      {
       "k": "ch",
       "id": "s13",
@@ -5667,22 +5927,59 @@ const SIMULADOS = [
       ],
       "a": 1,
       "traps": {
-       "0": "p = 0,848 > 0,05 → **F** (sem diferença significativa)."
+       "0": "p = 1,000 > 0,05 → **F** (sem diferença significativa)."
+      },
+      "dep": "met",
+      "alt": {
+       "1": {
+        "a": 1,
+        "traps": {
+         "0": "p = 0,848 > 0,05 → **F** (sem diferença significativa)."
+        }
+       }
       }
      },
      {
       "k": "num",
       "id": "p13",
       "label": "Grupo 1 × grupo 3: valor de p",
-      "a": 0.848076,
+      "a": 1.0,
       "tol": 0.0015,
       "traps": [
        {
         "v": 0.427504,
         "tol": 0.0015,
-        "m": "Este é o p **sem correção** (LSD ou um t entre os dois grupos). O Tukey ajusta o p para as múltiplas comparações; use a coluna *Sig.* da tabela *Multiple Comparisons* com o **Tukey HSD**."
+        "m": "Este é o p **sem correção** (LSD, ou um t entre os dois grupos). O post-hoc existe justamente para corrigir o p pelas múltiplas comparações. Use a coluna *Sig.* no bloco **Bonferroni** da tabela *Multiple Comparisons*."
+       },
+       {
+        "v": 1.710015,
+        "tol": 0.0015,
+        "m": "Você multiplicou o p por 4 (as comparações pedidas). O SPSS multiplica pelas **6** comparações possíveis entre 4 grupos; use o valor que ele mostra."
+       },
+       {
+        "v": 0.848076,
+        "tol": 0.0015,
+        "m": "Este é o p do **Tukey**, mas você indicou que usou o Bonferroni. Confira em que bloco da tabela *Multiple Comparisons* está lendo."
        }
-      ]
+      ],
+      "dep": "met",
+      "alt": {
+       "1": {
+        "a": 0.848076,
+        "traps": [
+         {
+          "v": 0.427504,
+          "tol": 0.0015,
+          "m": "Este é o p **sem correção** (LSD, ou um t entre os dois grupos). O post-hoc existe justamente para corrigir o p pelas múltiplas comparações. Use a coluna *Sig.* da tabela *Multiple Comparisons*, na linha do **Tukey HSD**."
+         },
+         {
+          "v": 1.0,
+          "tol": 0.0015,
+          "m": "Este é o p do **Bonferroni**, mas você indicou que usou o Tukey. Confira em que bloco da tabela *Multiple Comparisons* está lendo (o SPSS mostra um bloco por método)."
+         }
+        ]
+       }
+      }
      },
      {
       "k": "ch",
@@ -5694,22 +5991,59 @@ const SIMULADOS = [
       ],
       "a": 1,
       "traps": {
-       "0": "p = 0,526 > 0,05 → **F** (sem diferença significativa)."
+       "0": "p = 1,000 > 0,05 → **F** (sem diferença significativa)."
+      },
+      "dep": "met",
+      "alt": {
+       "1": {
+        "a": 1,
+        "traps": {
+         "0": "p = 0,526 > 0,05 → **F** (sem diferença significativa)."
+        }
+       }
       }
      },
      {
       "k": "num",
       "id": "p23",
       "label": "Grupo 2 × grupo 3: valor de p",
-      "a": 0.526277,
+      "a": 1.0,
       "tol": 0.0015,
       "traps": [
        {
         "v": 0.184088,
         "tol": 0.0015,
-        "m": "Este é o p **sem correção** (LSD ou um t entre os dois grupos). O Tukey ajusta o p para as múltiplas comparações; use a coluna *Sig.* da tabela *Multiple Comparisons* com o **Tukey HSD**."
+        "m": "Este é o p **sem correção** (LSD, ou um t entre os dois grupos). O post-hoc existe justamente para corrigir o p pelas múltiplas comparações. Use a coluna *Sig.* no bloco **Bonferroni** da tabela *Multiple Comparisons*."
+       },
+       {
+        "v": 0.736351,
+        "tol": 0.0015,
+        "m": "Você multiplicou o p por 4 (as comparações pedidas). O SPSS multiplica pelas **6** comparações possíveis entre 4 grupos; use o valor que ele mostra."
+       },
+       {
+        "v": 0.526277,
+        "tol": 0.0015,
+        "m": "Este é o p do **Tukey**, mas você indicou que usou o Bonferroni. Confira em que bloco da tabela *Multiple Comparisons* está lendo."
        }
-      ]
+      ],
+      "dep": "met",
+      "alt": {
+       "1": {
+        "a": 0.526277,
+        "traps": [
+         {
+          "v": 0.184088,
+          "tol": 0.0015,
+          "m": "Este é o p **sem correção** (LSD, ou um t entre os dois grupos). O post-hoc existe justamente para corrigir o p pelas múltiplas comparações. Use a coluna *Sig.* da tabela *Multiple Comparisons*, na linha do **Tukey HSD**."
+         },
+         {
+          "v": 1.0,
+          "tol": 0.0015,
+          "m": "Este é o p do **Bonferroni**, mas você indicou que usou o Tukey. Confira em que bloco da tabela *Multiple Comparisons* está lendo (o SPSS mostra um bloco por método)."
+         }
+        ]
+       }
+      }
      },
      {
       "k": "ch",
@@ -5721,22 +6055,59 @@ const SIMULADOS = [
       ],
       "a": 1,
       "traps": {
-       "0": "p = 0,809 > 0,05 → **F** (sem diferença significativa)."
+       "0": "p = 1,000 > 0,05 → **F** (sem diferença significativa)."
+      },
+      "dep": "met",
+      "alt": {
+       "1": {
+        "a": 1,
+        "traps": {
+         "0": "p = 0,809 > 0,05 → **F** (sem diferença significativa)."
+        }
+       }
       }
      },
      {
       "k": "num",
       "id": "p14",
       "label": "Grupo 1 × grupo 4: valor de p",
-      "a": 0.808526,
+      "a": 1.0,
       "tol": 0.0015,
       "traps": [
        {
         "v": 0.383633,
         "tol": 0.0015,
-        "m": "Este é o p **sem correção** (LSD ou um t entre os dois grupos). O Tukey ajusta o p para as múltiplas comparações; use a coluna *Sig.* da tabela *Multiple Comparisons* com o **Tukey HSD**."
+        "m": "Este é o p **sem correção** (LSD, ou um t entre os dois grupos). O post-hoc existe justamente para corrigir o p pelas múltiplas comparações. Use a coluna *Sig.* no bloco **Bonferroni** da tabela *Multiple Comparisons*."
+       },
+       {
+        "v": 1.534534,
+        "tol": 0.0015,
+        "m": "Você multiplicou o p por 4 (as comparações pedidas). O SPSS multiplica pelas **6** comparações possíveis entre 4 grupos; use o valor que ele mostra."
+       },
+       {
+        "v": 0.808526,
+        "tol": 0.0015,
+        "m": "Este é o p do **Tukey**, mas você indicou que usou o Bonferroni. Confira em que bloco da tabela *Multiple Comparisons* está lendo."
        }
-      ]
+      ],
+      "dep": "met",
+      "alt": {
+       "1": {
+        "a": 0.808526,
+        "traps": [
+         {
+          "v": 0.383633,
+          "tol": 0.0015,
+          "m": "Este é o p **sem correção** (LSD, ou um t entre os dois grupos). O post-hoc existe justamente para corrigir o p pelas múltiplas comparações. Use a coluna *Sig.* da tabela *Multiple Comparisons*, na linha do **Tukey HSD**."
+         },
+         {
+          "v": 1.0,
+          "tol": 0.0015,
+          "m": "Este é o p do **Bonferroni**, mas você indicou que usou o Tukey. Confira em que bloco da tabela *Multiple Comparisons* está lendo (o SPSS mostra um bloco por método)."
+         }
+        ]
+       }
+      }
      },
      {
       "k": "ch",
@@ -5748,36 +6119,75 @@ const SIMULADOS = [
       ],
       "a": 1,
       "traps": {
-       "0": "p = 0,493 > 0,05 → **F** (sem diferença significativa)."
+       "0": "p = 1,000 > 0,05 → **F** (sem diferença significativa)."
+      },
+      "dep": "met",
+      "alt": {
+       "1": {
+        "a": 1,
+        "traps": {
+         "0": "p = 0,493 > 0,05 → **F** (sem diferença significativa)."
+        }
+       }
       }
      },
      {
       "k": "num",
       "id": "p24",
       "label": "Grupo 2 × grupo 4: valor de p",
-      "a": 0.493248,
+      "a": 1.0,
       "tol": 0.0015,
       "traps": [
        {
         "v": 0.167608,
         "tol": 0.0015,
-        "m": "Este é o p **sem correção** (LSD ou um t entre os dois grupos). O Tukey ajusta o p para as múltiplas comparações; use a coluna *Sig.* da tabela *Multiple Comparisons* com o **Tukey HSD**."
+        "m": "Este é o p **sem correção** (LSD, ou um t entre os dois grupos). O post-hoc existe justamente para corrigir o p pelas múltiplas comparações. Use a coluna *Sig.* no bloco **Bonferroni** da tabela *Multiple Comparisons*."
+       },
+       {
+        "v": 0.670432,
+        "tol": 0.0015,
+        "m": "Você multiplicou o p por 4 (as comparações pedidas). O SPSS multiplica pelas **6** comparações possíveis entre 4 grupos; use o valor que ele mostra."
+       },
+       {
+        "v": 0.493248,
+        "tol": 0.0015,
+        "m": "Este é o p do **Tukey**, mas você indicou que usou o Bonferroni. Confira em que bloco da tabela *Multiple Comparisons* está lendo."
        }
-      ]
+      ],
+      "dep": "met",
+      "alt": {
+       "1": {
+        "a": 0.493248,
+        "traps": [
+         {
+          "v": 0.167608,
+          "tol": 0.0015,
+          "m": "Este é o p **sem correção** (LSD, ou um t entre os dois grupos). O post-hoc existe justamente para corrigir o p pelas múltiplas comparações. Use a coluna *Sig.* da tabela *Multiple Comparisons*, na linha do **Tukey HSD**."
+         },
+         {
+          "v": 1.0,
+          "tol": 0.0015,
+          "m": "Este é o p do **Bonferroni**, mas você indicou que usou o Tukey. Confira em que bloco da tabela *Multiple Comparisons* está lendo (o SPSS mostra um bloco por método)."
+         }
+        ]
+       }
+      }
      }
     ],
     "grid": 2,
     "theory": [
      "Os testes **post-hoc** (*a posteriori*) comparam os grupos dois a dois, **corrigindo o p** para o número de comparações, de modo que o erro tipo I global fique em 5%.",
-     "Depois da ANOVA, o **Tukey HSD** é o padrão quando as variâncias são homogêneas. Depois do Kruskal-Wallis, o SPSS faz o **teste de Dunn com correção de Bonferroni** (menu *Nonparametric Tests › Independent Samples*, opção *All pairwise*); use a coluna **Adj. Sig.**",
+     "Depois da ANOVA, a disciplina recomenda o **Bonferroni**: ele pega o p de cada comparação sem correção (LSD) e multiplica pelo número de comparações, ou seja, cada par precisa de p < 0,05/6 ≈ 0,0083. É simples, vale para qualquer tipo de teste e é **conservador** (protege bem contra falsos positivos). Atenção: o SPSS multiplica sempre pelas **6** comparações possíveis entre 4 grupos, mesmo que você só vá olhar 4; vale o valor que o SPSS mostra na coluna *Sig.* do bloco Bonferroni.",
+     "O **Tukey HSD** também é aceito aqui: foi feito para comparar **todos os pares** depois de uma ANOVA com variâncias homogêneas e costuma dar p um pouco menores que o Bonferroni (tem mais poder). Os dois controlam o erro tipo I global em 5%; quando discordam, é porque o p está perto do limite.",
+     "Depois do Kruskal-Wallis, o SPSS faz o **teste de Dunn com correção de Bonferroni** (menu *Nonparametric Tests › Independent Samples*, opção *All pairwise*); use a coluna **Adj. Sig.**",
      "Atenção: aqui a ANOVA **não** foi significativa (questão 12). Nesse caso, o normal é **não** fazer post-hoc: não há diferença global para explicar. Os valores servem para confirmar que nenhum par difere."
     ],
     "spss": {
-     "menu": "Analyze › Compare Means › One-Way ANOVA… → *Post Hoc…* → marque **Tukey** → Continue → OK",
-     "syntax": "ONEWAY reacao_trad BY grupoexp\n  /POSTHOC=TUKEY ALPHA(0.05)."
+     "menu": "Analyze › Compare Means › One-Way ANOVA… → *Post Hoc…* → marque **Bonferroni** (ou **Tukey**) → Continue → OK",
+     "syntax": "ONEWAY reacao_trad BY grupoexp\n  /POSTHOC=BONFERRONI TUKEY ALPHA(0.05)."
     },
-    "out": "Multiple Comparisons (Tukey HSD, reacao_trad)\n-------------------------------------\n(I)  (J)  Mean Difference (I-J)  Sig.\n-------------------------------------\n1      2                -3.9000  .957\n1      3                 6.2667  .848\n1      4                 7.2000  .809\n2      3                10.1667  .526\n2      4                11.1000  .493\n3      4                 0.9333  .999\n-------------------------------------",
-    "sol": "1 × 3: p = 0,848 → F · 2 × 3: p = 0,526 → F · 1 × 4: p = 0,809 → F · 2 × 4: p = 0,493 → F."
+    "out": "Multiple Comparisons (reacao_trad)\n--------------------------------------------------\n            (I)  (J)  Mean Difference (I-J)   Sig.\n--------------------------------------------------\nTukey HSD     1    2                -3.9000   .957\n              1    3                 6.2667   .848\n              1    4                 7.2000   .809\n              2    3                10.1667   .526\n              2    4                11.1000   .493\n              3    4                 0.9333   .999\nBonferroni    1    2                -3.9000  1.000\n              1    3                 6.2667  1.000\n              1    4                 7.2000  1.000\n              2    3                10.1667  1.000\n              2    4                11.1000  1.000\n              3    4                 0.9333  1.000\n--------------------------------------------------\nO SPSS mostra os blocos na ordem do diálogo (Tukey antes de Bonferroni). Leia o bloco do método que você escolheu.",
+    "sol": "**Bonferroni:** 1 × 3: p = 1,000 → F · 2 × 3: p = 1,000 → F · 1 × 4: p = 1,000 → F · 2 × 4: p = 1,000 → F. **Tukey** (também aceito): 1 × 3: p = 0,848 → F · 2 × 3: p = 0,526 → F · 1 × 4: p = 0,809 → F · 2 × 4: p = 0,493 → F."
    }
   ]
  }
