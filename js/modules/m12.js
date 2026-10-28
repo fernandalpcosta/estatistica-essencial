@@ -75,7 +75,7 @@ MODULES.push({
       "Correlação: *r*(gl) = valor, p = valor.",
       "Reporte p com 2 ou 3 casas (p = 0,032), use 'p < 0,001' para valores muito pequenos e nunca escreva 'p = 0,000'."
     ] },
-    { box: "dica", t: "Agora, o simulado", c: ["O simulado geral sorteia 25 questões de todos os módulos. Use a página **Meu progresso** para ver em que módulos você ainda está abaixo de 70% e o que vale revisar."] }
+    { box: "dica", t: "Agora, os simulados", c: ["Os **simulados de prova** trazem casos completos para resolver no SPSS, com base de dados para baixar e a explicação de cada erro. O **teste geral** sorteia 25 questões conceituais de todos os módulos. Use a página **Meu progresso** para ver em que módulos você ainda está abaixo de 70% e o que vale revisar."] }
   ],
   pratica: {
     python: [

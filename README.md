@@ -26,7 +26,32 @@ Cada módulo tem três abas:
 - **Na prática**: como fazer em **Python** (adicional) e no **SPSS** (extra), com menus e sintaxe.
 - **Exercícios**: 168 questões conceituais, de cálculo (com tolerância numérica) e de interpretação de saídas.
 
-Há também um **simulado geral** (25 questões sorteadas) e a página **Meu progresso**, com notas por módulo, histórico de tentativas, módulos a revisar e exportação/importação do progresso em JSON.
+Há também a página **Meu progresso**, com notas por módulo e por simulado, histórico de tentativas, módulos a revisar e exportação/importação do progresso em JSON.
+
+## Simulados de prova (SPSS)
+
+Cinco casos completos no formato da prova de Estatística (modelo: exame da L-carnitina), para treinar no SPSS:
+
+| # | Caso | Decisões que o caso exige |
+|---|---|---|
+| 1 | Beta-alanina e os 400 metros | t unilateral; Pearson; t emparelhado; ANOVA + Tukey |
+| 2 | Aplicativo de treino e frequência no ginásio | t bilateral; Spearman; Wilcoxon; Kruskal-Wallis + Dunn |
+| 3 | Promoção “Família no Estádio” e gasto dos adeptos | unilateral com média do lado oposto; Spearman; t emparelhado; ANOVA + Tukey |
+| 4 | Sapatilhas com placa de carbono nos 5 km | t de Welch (Levene significativo); Pearson; Wilcoxon; Kruskal-Wallis + Dunn |
+| 5 | Realidade virtual e o tempo de reação dos guarda-redes | t unilateral; Spearman; t emparelhado; ANOVA não significativa |
+
+Cada caso tem 13 questões abertas (frequências, descritivas, t de uma amostra, t independente, normalidade, correlação, teste emparelhado, recodificação, pressupostos, ANOVA/Kruskal-Wallis e post-hoc). A base de dados vem em `.sav` e `.csv` (`dados/simulados/`). O aluno digita os valores obtidos no SPSS; ao conferir, cada resposta errada mostra **por que** provavelmente errou (p bilateral no lugar do unilateral, linha errada do Levene, erro-padrão no lugar do desvio-padrão, Sig. sem correção de Bonferroni…), a teoria, o caminho no SPSS (menu e sintaxe) e a saída esperada.
+
+Há ainda o **teste geral de conhecimentos** (25 questões conceituais sorteadas de todos os módulos).
+
+### Regerar os simulados
+
+As bases, o gabarito e as explicações são gerados por `tools/gerar_simulados.py`, que calcula tudo com `tools/spss_stats.py` (mesmos métodos do SPSS 27+: Shapiro-Wilk de Royston, Levene pela média, Tukey HSD, Wilcoxon e Dunn-Bonferroni com correção de empates). O cálculo foi conferido com a base do exame da L-carnitina. Para alterar um caso, edite o gerador e rode:
+
+```
+pip install numpy scipy pandas pyreadstat
+python3 tools/gerar_simulados.py
+```
 
 ## Como usar
 
@@ -46,6 +71,9 @@ js/stats.js          funções de distribuição (normal, t, χ², F) para as vi
 js/viz.js            visualizações interativas (SVG)
 js/app.js            rotas, renderização, exercícios e progresso
 js/modules/mNN.js    conteúdo de cada módulo
+js/simulados/casos.js  simulados de prova (gerado por tools/gerar_simulados.py)
+dados/simulados/     bases de dados dos simulados (.sav e .csv)
+tools/               gerador dos simulados e funções estatísticas equivalentes às do SPSS
 vendor/katex/        KaTeX 0.16.11 (MIT) para renderizar as fórmulas
 ```
 

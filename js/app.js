@@ -14,6 +14,7 @@
   }
   let P = load();
   if (!P.read) P.read = {};
+  if (!P.casos) P.casos = {};
   function persist() { try { localStorage.setItem(STORE, JSON.stringify(P)); } catch (e) {} }
   function addAttempt(key, score, total) {
     (P.attempts[key] = P.attempts[key] || []).push({ d: Date.now(), s: Math.round(100 * score / total), n: total });
@@ -138,7 +139,8 @@
           h("div", null, [h("h3", { text: m.title }), h("p", { text: m.sub }), badge(m.id)])
         ])))
       ])),
-      h("a", { class: "test-card", href: "#/simulado" }, [h("div", null, [h("h3", { text: "Simulado geral" }), h("p", { text: "25 questões sorteadas de todos os módulos." })]), h("span", { class: "badge " + (best("simulado") >= PASS ? "done" : "new"), text: best("simulado") != null ? "Melhor: " + best("simulado") + "%" : "Começar" })])
+      h("a", { class: "test-card prova", href: "#/simulados" }, [h("div", null, [h("h3", { text: "Simulados de prova (SPSS)" }), h("p", { text: SIMS.length + " casos completos no formato da prova: baixe a base de dados, analise no SPSS e confira as respostas, com a explicação de cada erro." })]), h("span", { class: "badge " + (SIMS.some((x) => best(simKey(x)) >= PASS) ? "done" : "new"), text: SIMS.filter((x) => best(simKey(x)) != null).length + "/" + SIMS.length + " feitos" })]),
+      h("a", { class: "test-card", href: "#/simulado" }, [h("div", null, [h("h3", { text: "Teste geral de conhecimentos" }), h("p", { text: "25 questões conceituais sorteadas de todos os módulos." })]), h("span", { class: "badge " + (best("simulado") >= PASS ? "done" : "new"), text: best("simulado") != null ? "Melhor: " + best("simulado") + "%" : "Começar" })])
     ], null, "home");
   }
 
@@ -148,7 +150,7 @@
     const idx = MODULES.indexOf(m), prev = MODULES[idx - 1], next = MODULES[idx + 1];
     let body;
     if (tab === "pratica") body = practice(m);
-    else if (tab === "exercicios") { body = h("div", { class: "quiz-host" }); runQuiz(body, m.ex, m.id, next ? ["Próximo módulo", "#/m/" + next.id] : ["Simulado geral", "#/simulado"], ["Rever o conceito", base]); }
+    else if (tab === "exercicios") { body = h("div", { class: "quiz-host" }); runQuiz(body, m.ex, m.id, next ? ["Próximo módulo", "#/m/" + next.id] : ["Simulados de prova", "#/simulados"], ["Rever o conceito", base]); }
     else {
       body = h("article", { class: "concept" }, [
         h("section", { class: "goals" }, [h("h2", { text: "Ao final deste módulo você vai…" }), h("ul", null, m.goals.map((g) => M("li", g)))])
@@ -166,7 +168,7 @@
       body,
       h("nav", { class: "pager", "aria-label": "Módulos" }, [
         prev ? h("a", { href: "#/m/" + prev.id, text: "← " + prev.short }) : h("span"),
-        next ? h("a", { href: "#/m/" + next.id, text: next.short + " →" }) : h("a", { href: "#/simulado", text: "Simulado geral →" })
+        next ? h("a", { href: "#/m/" + next.id, text: next.short + " →" }) : h("a", { href: "#/simulados", text: "Simulados de prova →" })
       ])
     ], m.title, m.id === "m12" ? "fluxo" : "mods");
   }
@@ -213,11 +215,23 @@
         kpi("Módulos concluídos", done + " / " + MODULES.length),
         kpi("Média das melhores notas", avg != null ? avg + "%" : "—"),
         kpi("Tentativas no total", String(allAtt.length)),
-        kpi("Simulado (melhor)", best("simulado") != null ? best("simulado") + "%" : "—")
+        kpi("Teste geral (melhor)", best("simulado") != null ? best("simulado") + "%" : "—"),
+        kpi("Simulados de prova feitos", SIMS.filter((x) => best(simKey(x)) != null).length + " / " + SIMS.length)
       ]),
       h("div", { class: "bar big", role: "img", "aria-label": done + " de " + MODULES.length + " módulos concluídos" }, h("i", { style: "width:" + (100 * done / MODULES.length) + "%" })),
       weak.length ? h("section", { class: "panel" }, [h("h2", { text: "Para revisar" }), h("p", { text: "Você já tentou estes módulos mas ainda não chegou a " + PASS + "%:" }), h("ul", null, weak.map((m) => h("li", null, h("a", { href: "#/m/" + m.id, text: m.n + ". " + m.title + " (melhor: " + best(m.id) + "%)" }))))]) : null,
       allAtt.length > 1 ? h("section", { class: "panel" }, [h("h2", { text: "Evolução das notas" }), h("p", { class: "small", text: "Cada ponto é uma tentativa, em ordem cronológica (todos os módulos e simulados)." }), timeline(allAtt)]) : null,
+      SIMS.length ? h("section", { class: "panel" }, [h("h2", { text: "Simulados de prova (SPSS)" }), h("div", { class: "table-wrap" }, h("table", { class: "progress-table" }, [
+        h("thead", null, h("tr", null, ["Simulado", "Respondidas", "Tentativas", "Melhor", "Última", "Histórico"].map((c) => h("th", { scope: "col", text: c })))),
+        h("tbody", null, SIMS.map((x, i) => { const a = P.attempts[simKey(x)] || []; return h("tr", null, [
+          h("th", { scope: "row" }, h("a", { href: "#/simulados/" + x.id, text: (i + 1) + ". " + x.title })),
+          h("td", { text: Object.keys(simState(x).chk).length + "/" + x.questions.length }),
+          h("td", { text: String(a.length) }),
+          h("td", { text: best(simKey(x)) != null ? best(simKey(x)) + "%" : "—" }),
+          h("td", { text: last(simKey(x)) != null ? last(simKey(x)) + "%" : "—" }),
+          h("td", null, spark(a))
+        ]); }))
+      ]))]) : null,
       h("section", { class: "panel" }, [h("h2", { text: "Por módulo" }), h("div", { class: "table-wrap" }, h("table", { class: "progress-table" }, [
         h("thead", null, h("tr", null, ["Módulo", "Estudado", "Tentativas", "Melhor", "Última", "Histórico"].map((c) => h("th", { scope: "col", text: c })))),
         h("tbody", null, rows)
@@ -225,7 +239,7 @@
       h("section", { class: "panel" }, [h("h2", { text: "Backup" }), h("div", { class: "row wrap" }, [
         h("button", { type: "button", class: "btn", text: "Exportar progresso (.json)", onclick: exportFile }),
         h("button", { type: "button", class: "btn", text: "Importar progresso", onclick: () => fileIn.click() }), fileIn,
-        h("button", { type: "button", class: "btn danger", text: "Apagar tudo", onclick: () => { if (confirm("Apagar todo o progresso salvo neste navegador?")) { P = { attempts: {}, read: {} }; persist(); route(); } } })
+        h("button", { type: "button", class: "btn danger", text: "Apagar tudo", onclick: () => { if (confirm("Apagar todo o progresso salvo neste navegador?")) { P = { attempts: {}, read: {}, casos: {} }; persist(); route(); } } })
       ])])
     ], "Meu progresso", "prog");
   }
@@ -269,7 +283,7 @@
     file.text().then((t) => {
       const d = JSON.parse(t);
       if (!d || typeof d.attempts !== "object") throw new Error("formato");
-      P = { attempts: d.attempts, read: d.read || {} }; persist(); route();
+      P = { attempts: d.attempts, read: d.read || {}, casos: d.casos || {} }; persist(); route();
     }).catch(() => alert("Arquivo inválido. Use um arquivo exportado por este site."));
   }
 
@@ -278,10 +292,215 @@
     const host = h("div", { class: "quiz-host" });
     runQuiz(host, shuffle(pool).slice(0, 25), "simulado", ["Meu progresso", "#/progresso"], ["Início", "#/"]);
     return mount([
-      crumbs([["Início", "#/"], ["Simulado geral"]]),
-      h("header", { class: "page-head" }, [h("p", { class: "eyebrow", text: "Avaliação" }), h("h1", { text: "Simulado geral" }), h("p", { class: "lead", text: "25 questões sorteadas de todos os módulos. Cada questão indica de qual módulo veio, para você saber o que revisar." })]),
+      crumbs([["Início", "#/"], ["Simulados", "#/simulados"], ["Teste geral"]]),
+      h("header", { class: "page-head" }, [h("p", { class: "eyebrow", text: "Avaliação" }), h("h1", { text: "Teste geral de conhecimentos" }), h("p", { class: "lead", text: "25 questões conceituais sorteadas de todos os módulos. Cada questão indica de qual módulo veio, para você saber o que revisar." })]),
       host
-    ], "Simulado geral", "sim");
+    ], "Teste geral", "sim");
+  }
+
+  /* ---------- Simulados de prova (SPSS) ---------- */
+  const SIMS = typeof SIMULADOS !== "undefined" ? SIMULADOS : [];
+  const simById = (id) => SIMS.find((s) => s.id === id);
+  const simKey = (s) => "prova-" + s.id;
+  const simState = (s) => {
+    P.casos = P.casos || {};
+    return (P.casos[s.id] = P.casos[s.id] || { v: {}, chk: {} });
+  };
+
+  function pageSimulados() {
+    return mount([
+      crumbs([["Início", "#/"], ["Simulados de prova"]]),
+      h("header", { class: "page-head" }, [
+        h("p", { class: "eyebrow", text: "Treino para a prova · SPSS" }),
+        h("h1", { text: "Simulados de prova" }),
+        h("p", { class: "lead", text: "Cada simulado é um caso completo, no formato da prova: você baixa a base de dados, faz as análises no SPSS e escreve os resultados. Ao conferir, cada resposta errada vem com o porquê do erro, a teoria, o caminho no SPSS e a saída que você deveria ter obtido." })
+      ]),
+      h("aside", { class: "box dica" }, [h("p", { class: "box-kind", text: "Como funciona" }), h("ul", { class: "blk-list" }, [
+        "Todos os casos têm a mesma estrutura de 13 questões: frequências, descritivas, teste t de uma amostra, t independente, normalidade, correlação, teste emparelhado, recodificação, pressupostos da ANOVA, ANOVA ou Kruskal-Wallis e post-hoc.",
+        "As decisões **mudam de um caso para outro**: em alguns a variável é normal, em outros não; às vezes vale a ANOVA, às vezes o Kruskal-Wallis. Não decore o caminho: verifique os pressupostos.",
+        "As respostas ficam salvas neste navegador; pode parar e continuar depois."
+      ].map((x) => M("li", x)))]),
+      h("div", { class: "cards" }, SIMS.map((s, i) => {
+        const st = simState(s), done = Object.keys(st.chk).length, b = best(simKey(s));
+        return h("a", { class: "mod-card", href: "#/simulados/" + s.id }, [
+          h("span", { class: "mod-num", text: String(i + 1) }),
+          h("div", null, [h("h3", { text: s.title }), h("p", { text: s.tema + " · " + s.n + " casos · " + s.questions.length + " questões" }),
+            h("span", { class: "badge " + (b != null ? (b >= PASS ? "done" : "tried") : done ? "read" : "new"), text: b != null ? "Melhor: " + b + "%" : done ? done + "/" + s.questions.length + " respondidas" : "Começar" })])
+        ]);
+      })),
+      h("a", { class: "test-card", href: "#/simulado" }, [h("div", null, [h("h3", { text: "Teste geral de conhecimentos" }), h("p", { text: "Outra coisa: 25 questões conceituais sorteadas de todos os módulos, sem SPSS." })]), h("span", { class: "badge", text: "Abrir" })])
+    ], "Simulados de prova", "prova");
+  }
+
+  function pageCaso(s) {
+    const st = simState(s);
+    const idx = SIMS.indexOf(s), next = SIMS[idx + 1];
+    const qcards = [];
+    const summary = h("div", { class: "case-summary", role: "status", "aria-live": "polite" });
+    const scoreOf = (qi) => st.chk[qi] != null ? st.chk[qi] : null;
+    function updateSummary() {
+      const n = s.questions.length, done = Object.keys(st.chk).length;
+      const pts = Object.values(st.chk).reduce((a, b) => a + b, 0);
+      summary.textContent = "";
+      summary.append(
+        h("div", { class: "quiz-meta" }, [h("span", { text: "Respondidas: " + done + " de " + n }), h("span", { text: done ? "Nota até aqui: " + Math.round(100 * pts / done) + "%" : "" })]),
+        h("div", { class: "bar thin" }, h("i", { style: "width:" + (100 * done / n) + "%" }))
+      );
+      if (done === n) {
+        const pct = Math.round(100 * pts / n);
+        if (!st.rec) { addAttempt(simKey(s), pts, n); st.rec = true; persist(); }
+        const weak = s.questions.map((q, i) => [i, scoreOf(i)]).filter((x) => x[1] < 1);
+        summary.append(h("div", { class: "case-end" }, [
+          h("p", { class: "big", text: pct + "%" }),
+          h("p", { class: "end-msg", text: pct >= 90 ? "Excelente: você está pronto para a prova." : pct >= PASS ? "Bom resultado. Releia as explicações das questões que errou." : "Releia as explicações das questões erradas e refaça o simulado." }),
+          weak.length ? h("p", { class: "small" }, ["Para rever: "].concat(weak.flatMap((x, k) => [k ? ", " : "", h("a", { href: "#q" + (x[0] + 1), text: "questão " + (x[0] + 1), onclick: (e) => { e.preventDefault(); qcards[x[0]].scrollIntoView({ behavior: "smooth" }); } })]))) : null,
+          h("div", { class: "row wrap" }, [
+            h("button", { type: "button", class: "btn", text: "Refazer este simulado", onclick: () => { if (confirm("Apagar as respostas deste simulado e recomeçar?")) { P.casos[s.id] = { v: {}, chk: {} }; persist(); route(); } } }),
+            next ? h("a", { class: "btn main", href: "#/simulados/" + next.id, text: "Próximo simulado →" }) : h("a", { class: "btn main", href: "#/progresso", text: "Meu progresso →" })
+          ])
+        ]));
+      }
+    }
+
+    const dl = "dados/simulados/" + s.file;
+    const head = [
+      crumbs([["Início", "#/"], ["Simulados de prova", "#/simulados"], ["Simulado " + (idx + 1)]]),
+      h("header", { class: "page-head" }, [h("p", { class: "eyebrow", text: "Simulado de prova " + (idx + 1) + " · " + s.tema }), h("h1", { text: s.title })]),
+      h("section", { class: "panel" }, [h("h2", { text: "Enunciado" })].concat(s.story.map((p) => M("p", p))).concat([
+        M("p", "Com base no que foi lecionado nas aulas, responda às questões abaixo usando o SPSS. Use **α = 0,05** em todos os testes.")
+      ])),
+      h("section", { class: "panel" }, [
+        h("h2", { text: "Base de dados" }),
+        h("div", { class: "row" }, [
+          h("a", { class: "btn main", href: dl + ".sav", download: s.file + ".sav", text: "Baixar .sav (SPSS)" }),
+          h("a", { class: "btn", href: dl + ".csv", download: s.file + ".csv", text: "Baixar .csv" })
+        ]),
+        h("div", { class: "table-wrap" }, h("table", null, [
+          h("thead", null, h("tr", null, ["Variável", "Rótulo", "Medida", "Códigos / unidade"].map((c) => h("th", { scope: "col", text: c })))),
+          h("tbody", null, s.vars.map((v) => h("tr", null, [h("th", { scope: "row" }, h("code", { text: v.name })), h("td", { text: v.label }), h("td", { text: v.type }), h("td", { text: v.values || "" })])))
+        ])),
+        h("ul", { class: "blk-list small" }, [
+          "**.sav**: no SPSS, *File › Open › Data…* e escolha o arquivo. Os rótulos e códigos já vêm definidos.",
+          "**.csv**: *File › Import Data › CSV Data…*. O separador é a vírgula e o decimal é o ponto; depois, defina em *Variable View* os rótulos dos códigos (*Values*) e a medida (*Measure*).",
+          "Escreva os resultados com 3 casas decimais, como o SPSS mostra. Vírgula ou ponto, tanto faz. Quando o SPSS mostrar `.000`, escreva `0,000` ou `<0,001`."
+        ].map((x) => M("li", x)))
+      ])
+    ];
+
+    s.questions.forEach((q, qi) => qcards.push(caseQuestion(s, st, q, qi, updateSummary)));
+    updateSummary();
+    return mount(head.concat([h("div", { class: "case-qs" }, qcards), summary,
+      h("nav", { class: "pager", "aria-label": "Simulados" }, [
+        SIMS[idx - 1] ? h("a", { href: "#/simulados/" + SIMS[idx - 1].id, text: "← Simulado " + idx }) : h("a", { href: "#/simulados", text: "← Todos os simulados" }),
+        next ? h("a", { href: "#/simulados/" + next.id, text: "Simulado " + (idx + 2) + " →" }) : h("a", { href: "#/simulados", text: "Todos os simulados →" })
+      ])]), s.title, "prova");
+  }
+
+  function fieldOk(f, raw) {
+    if (f.k === "ch") return raw === f.a;
+    let v = parseNum(String(raw).replace(/[<>≤]/g, "").replace(/−/g, "-"));
+    if (!Number.isFinite(v)) return null;
+    if (f.abs) v = Math.abs(v);
+    if (f.lt && v >= 0 && v <= 0.001 + 1e-9) return true;
+    return Math.abs(v - (f.abs ? Math.abs(f.a) : f.a)) <= f.tol + 1e-9;
+  }
+  const fieldAns = (f) => f.k === "ch" ? f.o[f.a] : f.lt ? "< 0,001 (o SPSS mostra ,000)" :
+    (f.tol < 0.002 ? f.a.toLocaleString("pt-BR", { minimumFractionDigits: 3, maximumFractionDigits: 3 }) : fmt(f.a, 3)) + (f.unit ? " " + f.unit : "");
+  function fieldTrap(f, raw) {
+    if (f.k === "ch") return f.traps[String(raw)] || null;
+    const v = parseNum(String(raw).replace(/[<>≤]/g, "").replace(/−/g, "-"));
+    const t = (f.traps || []).find((t) => Math.abs(v - t.v) <= t.tol + 1e-9 || (t.v === 0 && v >= 0 && v <= 0.001));
+    return t ? t.m : null;
+  }
+
+  function caseQuestion(s, st, q, qi, onDone) {
+    const key = (f) => qi + "." + f.id;
+    const card = h("section", { class: "quiz-card case-q", id: "q" + (qi + 1) });
+    const inputs = {};
+    const fb = h("div", { class: "case-fb" });
+    const btn = h("button", { type: "button", class: "btn main", text: "Conferir questão " + (qi + 1) });
+    const grid = h("div", { class: "case-fields" + (q.grid ? " g" + q.grid : "") });
+    q.fields.forEach((f) => {
+      const id = "f-" + s.id + "-" + qi + "-" + f.id;
+      if (f.k === "ch") {
+        const box = h("div", { class: "seg", role: "radiogroup", "aria-labelledby": id });
+        f.o.forEach((o, oi) => box.appendChild(h("button", { type: "button", role: "radio", class: "seg-b", "aria-checked": st.v[key(f)] === oi ? "true" : "false", text: o, onclick: (e) => {
+          if (st.chk[qi] != null) return;
+          st.v[key(f)] = oi; persist();
+          box.querySelectorAll("button").forEach((b, bi) => b.setAttribute("aria-checked", bi === oi ? "true" : "false"));
+        } })));
+        inputs[f.id] = box;
+        grid.appendChild(h("div", { class: "fld" }, [h("span", { class: "fld-l", id, html: md(f.label) }), box]));
+      } else {
+        const inp = h("input", { type: "text", inputmode: "decimal", class: "answer", autocomplete: "off", id, value: st.v[key(f)] || "",
+          oninput: (e) => { st.v[key(f)] = e.target.value; persist(); e.target.removeAttribute("aria-invalid"); } });
+        inp.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); btn.click(); } });
+        inputs[f.id] = inp;
+        grid.appendChild(h("div", { class: "fld" }, [h("label", { class: "fld-l", for: id, html: md(f.label) }), h("div", { class: "fill-row" }, [inp, f.unit ? h("span", { class: "unit", text: f.unit }) : null])]));
+      }
+    });
+
+    function explanation(open) {
+      const det = h("details", { class: "expl", open: open || null }, [
+        h("summary", { text: open ? "Explicação completa" : "Ver a resolução completa" }),
+        h("h4", { text: "Resolução" }), M("p", q.sol),
+        h("h4", { text: "A teoria por trás" })].concat(q.theory.map((t) => M("p", t))).concat([
+        h("h4", { text: "Como fazer no SPSS" }),
+        h("p", { class: "menu" }, [h("span", { class: "menu-k", text: "Menu: " }), h("span", { html: md(q.spss.menu) })]),
+        codeBlock(q.spss.syntax, "spss"),
+        h("h4", { text: "O que o SPSS mostra" }),
+        h("pre", { class: "output" }, h("code", { text: q.out }))
+      ]));
+      return det;
+    }
+
+    function showResult() {
+      let right = 0;
+      const wrongs = [];
+      q.fields.forEach((f) => {
+        const raw = st.v[key(f)];
+        const ok = raw != null && raw !== "" && fieldOk(f, raw) === true;
+        if (ok) right++; else wrongs.push([f, raw]);
+        const el = inputs[f.id];
+        if (f.k === "ch") {
+          el.querySelectorAll("button").forEach((b, bi) => { b.disabled = true; if (bi === f.a) b.classList.add("right"); else if (bi === raw) b.classList.add("wrong"); });
+        } else { el.disabled = true; el.classList.add(ok ? "right" : "wrong"); }
+      });
+      btn.hidden = true;
+      fb.textContent = "";
+      const all = right === q.fields.length;
+      fb.appendChild(h("div", { class: "feedback " + (all ? "ok" : "no") }, [
+        h("strong", { text: all ? "Tudo certo!" : right + " de " + q.fields.length + " respostas certas." }),
+        wrongs.length ? h("ul", { class: "wrong-list" }, wrongs.map(([f, raw]) => {
+          const yours = raw == null || raw === "" ? "em branco" : f.k === "ch" ? f.o[raw] : raw;
+          const trap = raw == null || raw === "" ? null : fieldTrap(f, raw);
+          return h("li", null, [
+            h("p", { html: "<strong>" + md(f.label) + "</strong>: você respondeu <em>" + esc(yours) + "</em>; o certo é <strong>" + md(fieldAns(f)) + "</strong>." }),
+            trap ? M("p", "**Por que você errou:** " + trap, { class: "why" }) : null
+          ]);
+        })) : null
+      ]));
+      fb.appendChild(explanation(!all));
+    }
+
+    btn.addEventListener("click", () => {
+      const empty = q.fields.filter((f) => st.v[key(f)] == null || st.v[key(f)] === "");
+      const bad = q.fields.filter((f) => f.k === "num" && st.v[key(f)] && fieldOk(f, st.v[key(f)]) === null);
+      if (bad.length) { bad.forEach((f) => inputs[f.id].setAttribute("aria-invalid", "true")); inputs[bad[0].id].focus(); return; }
+      if (empty.length && !confirm("Há " + empty.length + " campo(s) em branco, que contarão como erro. Conferir mesmo assim?")) return;
+      const right = q.fields.filter((f) => { const r = st.v[key(f)]; return r != null && r !== "" && fieldOk(f, r) === true; }).length;
+      st.chk[qi] = right / q.fields.length;
+      persist();
+      showResult();
+      onDone();
+    });
+
+    card.append(
+      h("div", { class: "quiz-meta" }, [h("span", { text: "Questão " + (qi + 1) + " de " + s.questions.length }), h("span", { text: q.fields.length > 1 ? q.fields.length + " campos" : "" })]),
+      M("div", q.q, { class: "prompt" }), grid, h("div", { class: "row" }, btn), fb
+    );
+    if (st.chk[qi] != null) showResult();
+    return card;
   }
 
   /* ---------- Exercícios ---------- */
@@ -383,6 +602,7 @@
     if (parts[0] === "m" && byId(parts[1])) return pageModule(byId(parts[1]), parts[2] || "conceito");
     if (parts[0] === "progresso") return pageProgress();
     if (parts[0] === "simulado") return pageSimulado();
+    if (parts[0] === "simulados") return parts[1] && simById(parts[1]) ? pageCaso(simById(parts[1])) : pageSimulados();
     return pageHome();
   }
   window.addEventListener("hashchange", route);
